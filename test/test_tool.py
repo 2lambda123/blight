@@ -101,7 +101,7 @@ def test_compilertool_family_tcc(monkeypatch):
     ]
 
 
-def test_compilertool_family_fingerprint_fails(monkeypatch):
+def test_cc_blight_error(monkeypatch):
     logger = pretend.stub(warning=pretend.call_recorder(lambda s: None))
     monkeypatch.setattr(tool, "logger", logger)
 
@@ -109,8 +109,8 @@ def test_compilertool_family_fingerprint_fails(monkeypatch):
     subprocess = pretend.stub(run=pretend.call_recorder(lambda args, **kw: result))
     monkeypatch.setattr(tool, "subprocess", subprocess)
 
-    cc = tool.CC([])
-    assert cc.family == CompilerFamily.Unknown
+    with pytest.raises(BlightError):
+        tool.CC([]).run()
     assert logger.warning.calls == [
         pretend.call("compiler fingerprint failed: frontend didn't recognize -###?")
     ]
@@ -122,7 +122,7 @@ def test_tool_missing_wrapped_tool(monkeypatch):
         tool.CC.wrapped_tool()
 
 
-def test_tool_fails(monkeypatch):
+def test_cc_build_error(monkeypatch):
     monkeypatch.setenv("BLIGHT_WRAPPED_CC", "false")
     with pytest.raises(BuildError):
         tool.CC([]).run()
